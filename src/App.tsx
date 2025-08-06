@@ -1,11 +1,15 @@
 import { Container } from "react-bootstrap";
 import { Routes, Route, Navigate } from "react-router-dom";
-import NewNote from "./components/NewNotes";
+import NewNote from "./components/NewNote";
 import { useLocalStorage } from "./costumeHooks/useLocalStorage";
 import { useMemo } from "react";
 import { v4 as uuidV4 } from "uuid";
 import NoteList from "./components/NoteList";
+import NoteLayout from "./components/NoteLayout";
+import Note from "./components/Note";
+import EditNote from "./components/EditNote";
 
+// The Type we are using to show notes espicially to work with react keys
 export type Note = {
   id: string;
 } & NoteData;
@@ -66,8 +70,44 @@ function App() {
     });
   }
 
+  function updateNote(id: string, { tags, ...data }: NoteData) {
+    setNotes((prevNotes) => {
+      return prevNotes.map((note) => {
+        if (note.id === id) {
+          return { ...note, ...data, tagIds: tags.map((tag) => tag.id) };
+        } else {
+          return note;
+        }
+      });
+    });
+  }
+
+  function deleteNote(id: string) {
+    setNotes((prevNotes) => {
+      return prevNotes.filter((note) => note.id !== id);
+    });
+  }
+
   function addTag(tag: Tag) {
     setTags((prev) => [...prev, tag]);
+  }
+
+  function updateTag(id: string, label: string) {
+    setTags((prevTags) => {
+      return prevTags.map((tag) => {
+        if (tag.id == id) {
+          return { ...tag, label };
+        } else {
+          return tag;
+        }
+      });
+    });
+  }
+
+  function deleteTag(id: string) {
+    setTags((prevTags) => {
+      return prevTags.filter((tag) => tag.id !== id);
+    });
   }
 
   return (
@@ -75,7 +115,14 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={<NoteList notes={notesWithTags} availableTags={tags} />}
+          element={
+            <NoteList
+              notes={notesWithTags}
+              availableTags={tags}
+              updateTag={updateTag}
+              deleteTag={deleteTag}
+            />
+          }
         />
         <Route
           path="/new"
@@ -83,9 +130,18 @@ function App() {
             <NewNote addNote={addNote} addTag={addTag} availableTags={tags} />
           }
         />
-        <Route path="/:id">
-          <Route index element={<h1>show</h1>} />
-          <Route path="edit" element={<h1>Edit</h1>} />
+        <Route path="/:id" element={<NoteLayout notes={notesWithTags} />}>
+          <Route index element={<Note deleteNote={deleteNote} />} />
+          <Route
+            path="edit"
+            element={
+              <EditNote
+                updateNote={updateNote}
+                addTag={addTag}
+                availableTags={tags}
+              />
+            }
+          />
         </Route>
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
