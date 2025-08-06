@@ -6,15 +6,22 @@ import { type Tag, type NoteData } from "../App";
 import { v4 as uuidV4 } from "uuid";
 
 type NoteFormProps = {
-  addNote: (data: NoteData) => void;
+  onSubmit: (data: NoteData) => void;
   addTag: (tag: Tag) => void;
   availableTags: Tag[];
-};
+} & Partial<NoteData>;
 
-const NoteForm = ({ addNote, addTag, availableTags }: NoteFormProps) => {
+const NoteForm = ({
+  onSubmit,
+  addTag,
+  availableTags,
+  title = "",
+  markdown = "",
+  tags = [],
+}: NoteFormProps) => {
   const titleRef = useRef<HTMLInputElement>(null);
   const markdownRef = useRef<HTMLTextAreaElement>(null);
-  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+  const [selectedTags, setSelectedTags] = useState<Tag[]>(tags);
   const navigate = useNavigate();
 
   function handleSubmit(e: FormEvent) {
@@ -23,7 +30,7 @@ const NoteForm = ({ addNote, addTag, availableTags }: NoteFormProps) => {
       alert("Some inputs which are required are missing");
       return;
     }
-    addNote({
+    onSubmit({
       title: titleRef.current.value,
       markdown: markdownRef.current.value,
       tags: selectedTags,
@@ -39,7 +46,7 @@ const NoteForm = ({ addNote, addTag, availableTags }: NoteFormProps) => {
           <Col>
             <Form.Group controlId="title">
               <Form.Label>Title</Form.Label>
-              <Form.Control ref={titleRef} required />
+              <Form.Control ref={titleRef} required defaultValue={title} />
             </Form.Group>
           </Col>
           <Col>
@@ -71,7 +78,13 @@ const NoteForm = ({ addNote, addTag, availableTags }: NoteFormProps) => {
         </Row>
         <Form.Group controlId="markdown">
           <Form.Label>Body</Form.Label>
-          <Form.Control ref={markdownRef} required as="textarea" rows={15} />
+          <Form.Control
+            ref={markdownRef}
+            required
+            as="textarea"
+            rows={15}
+            defaultValue={markdown}
+          />
         </Form.Group>
         <Stack direction="horizontal" gap={2} className="justify-content-end">
           <Button type="submit" variant="primary">

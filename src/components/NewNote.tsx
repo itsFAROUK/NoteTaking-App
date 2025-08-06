@@ -12,7 +12,7 @@ const NewNotes = ({ addNote, addTag, availableTags }: NewNoteProps) => {
     <>
       <h1 className="mb-4">New Note</h1>
       <NoteForm
-        addNote={addNote}
+        onSubmit={addNote}
         addTag={addTag}
         availableTags={availableTags}
       />
